@@ -1,0 +1,47 @@
+# Servidor local de un condominio. Aquí corre simulado en el mismo PC que el servidor general.
+name: sitio-prueba
+
+services:
+  mqtt:
+    image: eclipse-mosquitto:2
+    env_file: .env
+    command: >
+      sh -c "rm -f /mosquitto/data/passwd &&
+      mosquitto_passwd -c -b /mosquitto/data/passwd $$MQTT_USER $$MQTT_PASS &&
+      chown mosquitto:mosquitto /mosquitto/data/passwd && chmod 600 /mosquitto/data/passwd &&
+      exec /usr/sbin/mosquitto -c /mosquitto/config/mosquitto.conf"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./datos/mosquitto:/mosquitto/data
+    ports:
+      - "127.0.0.1:1884:1883"
+    restart: unless-stopped
+
+  sitio:
+    build: ./app
+    command: python sitio.py
+    env_file: .env
+    volumes:
+      - ./datos/cola:/datos
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "127.0.0.1:8100:8100"
+    networks:
+      default:
+      internet-sim:
+    depends_on:
+      - mqtt
+    restart: unless-stopped
+
+  simulador:
+    build: ./app
+    command: python simulador.py --ayuda
+    env_file: .env
+    profiles: ["pruebas"]
+    restart: "no"
+    depends_on:
+      - mqtt
+
+networks:
+  internet-sim:
+    external: true

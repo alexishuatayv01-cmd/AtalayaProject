@@ -1,0 +1,50 @@
+== A. Con internet
+PASA  los 3 mensajes llegan al servidor general
+PASA  la cola local queda vacía
+== B. Corte de internet con una falla durante el corte
+PASA  garita ve que no hay internet
+PASA  garita ve la alarma sin internet
+PASA  los datos esperan en la cola
+PASA  el general todavía no tiene esos datos
+== C. Reinicio del servidor local durante el corte
+PASA  la cola sobrevive al reinicio
+PASA  la alarma sobrevive al reinicio
+PASA  la energía vuelve durante el corte y garita lo ve
+PASA  ese mensaje también queda en cola
+== D. El general detecta el sitio caído
+PASA  una sola alarma de sitio sin conexión
+PASA  ningún ticket falso por sensor callado
+PASA  la falla del corte aún no generó ticket
+== E. Vuelve internet
+PASA  la cola se vacía sola
+PASA  llegaron los 10 exactos, sin perder ni duplicar
+PASA  garita vuelve a ver conexión
+PASA  se cierra la alarma de sitio
+PASA  la falla ocurrida en el corte deja su ticket
+PASA  su alarma queda cerrada, con la energía de vuelta
+      inicio de la falla: 16:27:10 UTC; reporte recibido: 16:28:26 UTC
+== F. Seguridad y duplicados
+PASA  clave incorrecta rechazada
+PASA  confirmación perdida y reenvío: se guarda una vez
+PASA  un sitio no puede enviar sensores de otro condominio
+PASA  un dato dañado no traba el lote
+PASA  mensaje dañado apartado en el sitio, sin frenarlo
+PASA  MQTT local rechaza clave incorrecta
+== G. Servidor general caído
+PASA  guarda en cola con el general caído
+PASA  al volver el general se vacía la cola
+== H. Ráfaga tras un corte largo (2000 mensajes)
+PASA  la cola local guarda los 2000
+      subidos en 4 s
+PASA  llegan los 2000 al general
+== I. Sensor realmente callado con el sitio conectado (120 s)
+PASA  garita lo ve en la pantalla
+PASA  el general crea sus tickets
+PASA  se cierran al volver en el sitio
+PASA  se cierran al volver en el general
+
+mqtt: Up 18 minutes
+sitio: Up 5 minutes
+errores graves en el log del sitio: 0
+errores graves en el log del general: 0
+RESULTADO: TODO PASA

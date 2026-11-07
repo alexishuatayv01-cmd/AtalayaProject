@@ -1,0 +1,76 @@
+# Servidor general de Inventor Technology.
+# Los puertos solo se abren en este PC (127.0.0.1): Docker se salta ufw si se publican en todas las redes.
+name: inventor
+
+x-app: &app
+  build: ./app
+  env_file: .env
+  environment:
+    DB_HOST: db
+    MQTT_HOST: mqtt
+  restart: unless-stopped
+
+services:
+  db:
+    image: postgres:17
+    env_file: .env
+    volumes:
+      - ./datos/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  mqtt:
+    image: eclipse-mosquitto:2
+    env_file: .env
+    command: >
+      sh -c "rm -f /mosquitto/data/passwd &&
+      mosquitto_passwd -c -b /mosquitto/data/passwd $$MQTT_USER $$MQTT_PASS &&
+      chown mosquitto:mosquitto /mosquitto/data/passwd && chmod 600 /mosquitto/data/passwd &&
+      exec /usr/sbin/mosquitto -c /mosquitto/config/mosquitto.conf"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./datos/mosquitto:/mosquitto/data
+    ports:
+      - "127.0.0.1:1883:1883"
+    restart: unless-stopped
+
+  motor:
+    <<: *app
+    command: python motor.py
+    depends_on:
+      db:
+        condition: service_healthy
+      mqtt:
+        condition: service_started
+
+  api:
+    <<: *app
+    command: uvicorn api:app --host 0.0.0.0 --port 8000
+    volumes:
+      - ./datos/fotos:/datos/fotos
+    ports:
+      - "127.0.0.1:8000:8000"
+    networks:
+      default:
+      internet-sim:
+        aliases: [servidor-general]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  simulador:
+    <<: *app
+    command: python simulador.py --ayuda
+    restart: "no"
+    profiles: ["pruebas"]
+    depends_on:
+      - mqtt
+
+networks:
+  # Simula internet entre los servidores locales y este: se puede cortar en las pruebas.
+  internet-sim:
+    external: true

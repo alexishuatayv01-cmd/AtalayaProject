@@ -1,0 +1,331 @@
+<title>Mapa Inventor Technology</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: columna vertebral vertical con el sistema al centro y doce ramas a los lados, como un tablero de distribución. */
+:root {
+  --bg: #eef2f3; --surface: #ffffff; --fg: #17282f; --muted: #52666f; --line: #9fb0b7;
+  --accent: #0b6f78; --accent-fg: #ffffff; --next: #b25a00; --next-bg: #fbeedd;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body: "Barlow", "Segoe UI", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11191d; --surface: #1a262b; --fg: #e6eef0; --muted: #a0b2b9; --line: #4f636b;
+  --accent: #54c0c9; --accent-fg: #0b1a1e; --next: #f2aa5c; --next-bg: #33261a; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #11191d; --surface: #1a262b; --fg: #e6eef0; --muted: #a0b2b9; --line: #4f636b;
+  --accent: #54c0c9; --accent-fg: #0b1a1e; --next: #f2aa5c; --next-bg: #33261a; color-scheme: dark }
+
+body { background: var(--bg); color: var(--fg); font: 400 15px/1.45 var(--body); }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 32px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 40px; }
+.wrap > * { min-width: 0; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; margin: 0; text-wrap: balance; line-height: 1.1; }
+h1 { font-size: clamp(32px, 5vw, 46px); }
+h2 { font-size: 26px; margin-bottom: 6px; }
+h3 { font-size: 19px; font-weight: 600; margin-bottom: 6px; }
+p { margin: 0; max-width: 68ch; }
+.lead { color: var(--muted); margin-top: 8px; }
+.sub { color: var(--muted); margin-bottom: 16px; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 16px; font-size: 14px; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+i.m { flex: none; display: inline-block; width: 10px; height: 10px; box-sizing: border-box; }
+.d i.m, i.m.d { background: var(--accent); border: 2px solid var(--accent); }
+.p i.m, i.m.p { border: 2px solid var(--accent); border-radius: 50%; }
+.n i.m, i.m.n { border: 2px dashed var(--next); transform: rotate(45deg); }
+
+.map { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.core { background: var(--accent); color: var(--accent-fg); padding: 16px; text-align: center; }
+.core strong { display: block; font: 700 25px/1.05 var(--display); }
+.core small { display: block; margin-top: 6px; font-size: 13px; line-height: 1.3; }
+.branch { background: var(--surface); border-left: 3px solid var(--accent); padding: 12px 14px; position: relative; }
+.branch ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 14px; line-height: 1.35; }
+.branch li { display: grid; grid-template-columns: 10px minmax(0, 1fr); gap: 8px; }
+.branch li i.m { margin-top: 5px; }
+.sp { display: none; }
+
+@media (min-width: 860px) {
+  .map { grid-template-columns: minmax(0, 1fr) 176px minmax(0, 1fr); column-gap: 0; row-gap: 12px; }
+  .l { grid-column: 1; } .r { grid-column: 3; }
+  .l { border-left: 0; border-right: 3px solid var(--accent); }
+  .r1 { grid-row: 1; } .r2 { grid-row: 2; } .r3 { grid-row: 3; } .r4 { grid-row: 4; } .r5 { grid-row: 5; } .r6 { grid-row: 6; }
+  .sp { display: block; grid-column: 2; position: relative; }
+  .sp::before { content: ""; position: absolute; left: 50%; top: -6px; bottom: -6px; border-left: 2px solid var(--line); }
+  .sp::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 2px solid var(--line); }
+  .sp.r1::before { top: 50%; } .sp.r6::before { bottom: 50%; }
+  .core { grid-column: 2; grid-row: 1 / span 6; align-self: center; justify-self: center; width: 150px; z-index: 1; box-sizing: border-box; padding: 18px 10px; }
+}
+
+figure { margin: 0; }
+.scroll { overflow-x: auto; background: var(--surface); padding: 12px; }
+svg.flow { display: block; width: 100%; min-width: 1000px; height: auto; color: var(--fg); font-family: var(--body); }
+svg.flow .box { fill: var(--bg); stroke: currentColor; stroke-width: 1.5; }
+svg.flow .main { fill: var(--accent); stroke: var(--accent); }
+svg.flow .main-t { fill: var(--accent-fg); }
+svg.flow .zone { fill: none; stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 6 5; }
+svg.flow .dash { stroke-dasharray: 5 4; }
+svg.flow text { fill: currentColor; font-size: 13px; }
+svg.flow .t { font-weight: 600; font-size: 14px; }
+svg.flow .lbl { fill: var(--muted); font-size: 12px; }
+figcaption { color: var(--muted); font-size: 14px; margin-top: 10px; max-width: 68ch; }
+
+ol.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+ol.steps li { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; background: var(--surface); padding: 12px 14px; }
+ol.steps b.num { font: 700 28px/1 var(--display); color: var(--accent); }
+ol.steps .cols { display: grid; gap: 4px 24px; }
+@media (min-width: 760px) { ol.steps .cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+ol.steps li > div, ol.steps .cols > * { min-width: 0; }
+ol.steps h3 { margin-bottom: 4px; }
+ol.steps .done { font-size: 14px; color: var(--muted); }
+ol.steps .done b { font-weight: 600; color: var(--fg); }
+ol.steps li.now { background: var(--next-bg); outline: 2px solid var(--next); outline-offset: -2px; }
+ol.steps li.now b.num { color: var(--next); }
+.tag { display: inline-block; font: 500 11px/1 var(--mono); color: var(--next); letter-spacing: .04em; margin-left: 6px; vertical-align: 2px; }
+
+.open { display: grid; gap: 8px; }
+@media (min-width: 760px) { .open { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.open div { background: var(--surface); padding: 12px 14px; min-width: 0; }
+.open b { display: block; font-weight: 600; }
+.open span { color: var(--muted); font-size: 14px; }
+.foot { font: 500 12px/1.4 var(--mono); color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Mapa del sistema de Inventor Technology</h1>
+    <p class="lead">Todo lo conversado hasta el 2 de noviembre de 2026: un sistema para administrar condominios con sensores, servidores, página web, app e inteligencia artificial. El servidor general y un servidor local simulado ya funcionan con datos de prueba; el resto sigue siendo plan.</p>
+    <div class="legend" aria-label="Leyenda">
+      <span><i class="m d"></i>Decidido por ti</span>
+      <span><i class="m p"></i>Propuesto por Claude, sin confirmar</span>
+      <span><i class="m n"></i>Por definir</span>
+    </div>
+  </header>
+
+  <section aria-labelledby="t-mapa">
+    <h2 id="t-mapa">Mapa mental</h2>
+    <p class="sub">A la izquierda, lo que recoge y guarda los datos. A la derecha, lo que usan las personas.</p>
+    <div class="map">
+      <div class="core"><strong>Inventor Technology</strong><small>Un sistema para administrar condominios</small></div>
+
+      <div class="sp r1"></div><div class="sp r2"></div><div class="sp r3"></div><div class="sp r4"></div><div class="sp r5"></div><div class="sp r6"></div>
+
+      <article class="branch l r1">
+        <h3>La empresa</h3>
+        <ul>
+          <li class="d"><i class="m"></i>Mantenimiento preventivo, correctivo y predictivo</li>
+          <li class="d"><i class="m"></i>Cámaras, puertas y sus sensores, control de acceso</li>
+          <li class="d"><i class="m"></i>Sistemas eléctricos, carga, grupos electrógenos, pozos a tierra</li>
+          <li class="d"><i class="m"></i>Gestión y control de datos: administración y mantenimiento</li>
+        </ul>
+      </article>
+
+      <article class="branch r r1">
+        <h3>Página web</h3>
+        <ul>
+          <li class="d"><i class="m"></i>Información de la empresa y de los reportes</li>
+          <li class="d"><i class="m"></i>Cada condominio: ubicación y servicios contratados</li>
+          <li class="d"><i class="m"></i>Estado y diagnóstico de cada sistema; historial de alarmas</li>
+          <li class="d"><i class="m"></i>Personal asignado, con hora de ingreso y de salida</li>
+          <li class="d"><i class="m"></i>Dividida en área técnica y área de cliente</li>
+        </ul>
+      </article>
+
+      <article class="branch l r2">
+        <h3>Servidor general</h3>
+        <ul>
+          <li class="d"><i class="m"></i>Es el principal y almacena toda la información: es «la nube»</li>
+          <li class="d"><i class="m"></i>Este PC durante las pruebas; después, uno dedicado</li>
+          <li class="d"><i class="m"></i>Diagnósticos y simulaciones sobre sus datos</li>
+          <li class="d"><i class="m"></i>Instalado en el disco DATOS: PostgreSQL, Mosquitto, FastAPI y Docker</li>
+        </ul>
+      </article>
+
+      <article class="branch r r2">
+        <h3>App</h3>
+        <ul>
+          <li class="d"><i class="m"></i>Solo Android</li>
+          <li class="d"><i class="m"></i>Reportes con fotos, texto y explicaciones</li>
+          <li class="d"><i class="m"></i>Trabaja sin internet y envía todo al servidor al reconectarse</li>
+          <li class="d"><i class="m"></i>Área técnica y área de cliente, sin mezclar</li>
+          <li class="n"><i class="m"></i>Herramienta para construirla</li>
+        </ul>
+      </article>
+
+      <article class="branch l r3">
+        <h3>Servidor local por condominio</h3>
+        <ul>
+          <li class="d"><i class="m"></i>Recibe los datos del sitio y los sube al servidor general</li>
+          <li class="d"><i class="m"></i>Detecta alarmas y sigue funcionando sin internet (simulado)</li>
+          <li class="d"><i class="m"></i>Borra un dato solo cuando el general confirma que lo recibió (simulado)</li>
+          <li class="n"><i class="m"></i>Equipo: tablet con Ubuntu o mini PC / Raspberry Pi</li>
+        </ul>
+      </article>
+
+      <article class="branch r r3">
+        <h3>Tickets y mantenimiento</h3>
+        <ul>
+          <li class="d"><i class="m"></i>Estados: resuelto, no resuelto y pendiente</li>
+          <li class="d"><i class="m"></i>Hora límite por ticket; vencida, pasa a SLA en rojo y toma prioridad</li>
+          <li class="d"><i class="m"></i>Plan de mantenimiento anual y mensual</li>
+          <li class="p"><i class="m"></i>Las alarmas de sensores crean tickets automáticos</li>
+          <li class="n"><i class="m"></i>Categorías y horas de SLA (las propone Claude)</li>
+        </ul>
+      </article>
+
+      <article class="branch l r4">
+        <h3>Sensores IoT con ESP32</h3>
+        <ul>
+          <li class="d"><i class="m"></i>Un ESP32 en cada sistema que lo permita; los programamos nosotros</li>
+          <li class="d"><i class="m"></i>Envían alarmas por su cuenta, sin depender de garita</li>
+          <li class="d"><i class="m"></i>Sus logs alimentan el mantenimiento predictivo</li>
+          <li class="d"><i class="m"></i>Primero se simulan</li>
+          <li class="p"><i class="m"></i>Se reportan cada cierto tiempo; si callan, «sin comunicación»</li>
+        </ul>
+      </article>
+
+      <article class="branch r r4">
+        <h3>Usuarios y accesos</h3>
+        <ul>
+          <li class="d"><i class="m"></i>Técnico, supervisor y administrador en el área técnica</li>
+          <li class="d"><i class="m"></i>Cliente: ve quién está asignado y si los sistemas operan</li>
+          <li class="d"><i class="m"></i>Garita y presidentes: solo alertas críticas o incendio validado</li>
+          <li class="p"><i class="m"></i>Usuario individual en vez de un código compartido</li>
+          <li class="n"><i class="m"></i>Quién valida un incendio</li>
+        </ul>
+      </article>
+
+      <article class="branch l r5">
+        <h3>Red en el condominio</h3>
+        <ul>
+          <li class="d"><i class="m"></i>WAPs o repetidores hasta sótanos y grupos electrógenos</li>
+          <li class="d"><i class="m"></i>De momento por wifi; por switch si se puede</li>
+          <li class="p"><i class="m"></i>Celular de garita solo para el piloto; router fijo en producción</li>
+          <li class="p"><i class="m"></i>Cable hasta los WAPs para que rindan en sótanos</li>
+        </ul>
+      </article>
+
+      <article class="branch r r5">
+        <h3>Planos y simulación 3D</h3>
+        <ul>
+          <li class="d"><i class="m"></i>En el área técnica: flujo, ubicaciones, planos y medidas</li>
+          <li class="d"><i class="m"></i>Sirve para calcular cable, recorridos y obstáculos</li>
+          <li class="d"><i class="m"></i>Preventivos sin adivinar; respuesta más rápida</li>
+          <li class="p"><i class="m"></i>Primero planos 2D; medidas marcadas aproximada o verificada</li>
+        </ul>
+      </article>
+
+      <article class="branch l r6">
+        <h3>Continuidad</h3>
+        <ul>
+          <li class="p"><i class="m"></i>Respaldo diario en el otro disco (NVMe); falta una copia fuera del PC</li>
+          <li class="p"><i class="m"></i>Batería o UPS para router y ESP32 críticos</li>
+          <li class="p"><i class="m"></i>Vigilante aparte que reinicie el servidor si se cuelga</li>
+          <li class="p"><i class="m"></i>La alerta de incendio no reemplaza a la central</li>
+        </ul>
+      </article>
+
+      <article class="branch r r6">
+        <h3>Inteligencia artificial</h3>
+        <ul>
+          <li class="d"><i class="m"></i>Se suma al final y se conecta a todo</li>
+          <li class="d"><i class="m"></i>Cotizaciones, precios y proveedores</li>
+          <li class="d"><i class="m"></i>Guía a garita: diagnóstico y si se escala o no</li>
+          <li class="d"><i class="m"></i>Diagnóstico rápido del sistema si se cuelga</li>
+          <li class="p"><i class="m"></i>El precio sale de una tabla; la IA solo la consulta y redacta</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-flujo">
+    <h2 id="t-flujo">Cómo viajan los datos</h2>
+    <figure>
+      <div class="scroll" tabindex="0">
+        <svg class="flow" viewBox="0 0 1170 340" role="img" aria-label="Los sensores envían datos al ESP32, este al servidor local del condominio y este, por internet, al servidor general. La web y las apps trabajan con el servidor general. La IA se conecta al final.">
+          <defs>
+            <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>
+          </defs>
+          <rect class="zone" x="10" y="20" width="530" height="300"/>
+          <text class="lbl" x="24" y="42">Cada condominio</text>
+
+          <rect class="box" x="30" y="70" width="100" height="56"/>
+          <text class="t" x="80" y="103" text-anchor="middle">Sensores</text>
+          <rect class="box" x="180" y="70" width="90" height="56"/>
+          <text class="t" x="225" y="103" text-anchor="middle">ESP32</text>
+          <rect class="box" x="360" y="62" width="160" height="72"/>
+          <text class="t" x="440" y="92" text-anchor="middle">Servidor local</text>
+          <text x="440" y="112" text-anchor="middle">guarda si no hay internet</text>
+          <rect class="box" x="360" y="240" width="160" height="56"/>
+          <text class="t" x="440" y="273" text-anchor="middle">Pantalla de garita</text>
+
+          <line x1="130" y1="98" x2="178" y2="98" stroke="currentColor" stroke-width="1.5" marker-end="url(#a)"/>
+          <text class="lbl" x="154" y="88" text-anchor="middle">miden</text>
+          <line x1="270" y1="98" x2="358" y2="98" stroke="currentColor" stroke-width="1.5" marker-end="url(#a)"/>
+          <text class="lbl" x="314" y="88" text-anchor="middle">wifi o cable</text>
+          <line x1="440" y1="134" x2="440" y2="238" stroke="currentColor" stroke-width="1.5" marker-end="url(#a)"/>
+          <text class="lbl" x="450" y="190">alarmas en sitio</text>
+
+          <line x1="520" y1="98" x2="628" y2="98" stroke="currentColor" stroke-width="1.5" marker-end="url(#a)"/>
+          <text class="lbl" x="578" y="88" text-anchor="middle">internet</text>
+
+          <rect class="box main" x="630" y="50" width="190" height="96"/>
+          <text class="t main-t" x="725" y="82" text-anchor="middle">Servidor general</text>
+          <text class="main-t" x="725" y="104" text-anchor="middle">base de datos y reglas</text>
+          <text class="main-t" x="725" y="124" text-anchor="middle">tickets con SLA</text>
+
+          <polyline points="820,98 860,98 860,56 998,56" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#a)"/>
+          <line x1="860" y1="98" x2="860" y2="216" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="860" y1="216" x2="998" y2="216" stroke="currentColor" stroke-width="1.5" marker-end="url(#a)"/>
+          <line x1="862" y1="136" x2="998" y2="136" stroke="currentColor" stroke-width="1.5" marker-start="url(#a)" marker-end="url(#a)"/>
+          <text class="lbl" x="870" y="46">estado e historial</text>
+          <text class="lbl" x="870" y="126">tickets y reportes</text>
+          <text class="lbl" x="870" y="206">alertas críticas</text>
+
+          <rect class="box" x="1000" y="28" width="150" height="56"/>
+          <text class="t" x="1075" y="61" text-anchor="middle">Página web</text>
+          <rect class="box" x="1000" y="108" width="150" height="56"/>
+          <text class="t" x="1075" y="141" text-anchor="middle">App técnica</text>
+          <rect class="box" x="1000" y="188" width="150" height="56"/>
+          <text class="t" x="1075" y="221" text-anchor="middle">App de cliente</text>
+
+          <rect class="box dash" x="630" y="240" width="190" height="56"/>
+          <text class="t" x="725" y="273" text-anchor="middle">IA (al final)</text>
+          <line x1="725" y1="238" x2="725" y2="148" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+          <text class="lbl" x="735" y="198">consulta datos</text>
+        </svg>
+      </div>
+      <figcaption>Cada condominio sigue funcionando si se corta internet. Al volver la conexión, los datos pendientes suben al servidor general, y de ahí salen la web y las apps.</figcaption>
+    </figure>
+  </section>
+
+  <section aria-labelledby="t-orden">
+    <h2 id="t-orden">Orden de construcción</h2>
+    <p class="sub">Cada paso se valida funcionando antes de pasar al siguiente. Después sigue la mejora continua.</p>
+    <ol class="steps">
+      <li><b class="num">1</b><div class="cols"><div><h3>Servidor general <span class="tag">VALIDADO</span></h3>Base de datos, recepción de datos, reglas de alarma, tickets con SLA, ESP32 virtuales y respaldo.</div><p class="done"><b>Listo cuando:</b> una falla simulada crea su alarma y su ticket, el ticket vencido pasa a rojo, y los datos sobreviven a un reinicio y a una restauración.</p></div></li>
+      <li class="now"><b class="num">2</b><div class="cols"><div><h3>ESP32 y servidor local <span class="tag">SIMULADO Y VALIDADO · FALTA ESP32 REAL</span></h3>Primero simulado en este PC; después un piloto real con un ESP32 en una cámara.</div><p class="done"><b>Listo cuando:</b> al cortar la energía de la cámara aparece la alarma en el servidor, y un corte de internet no hace perder datos.</p></div></li>
+      <li><b class="num">3</b><div class="cols"><div><h3>Página web y app Android</h3>Áreas técnica y de cliente enlazadas al servidor, con reportes, tickets y alertas.</div><p class="done"><b>Listo cuando:</b> un técnico hace un reporte con fotos sin internet, se sube al reconectarse y se ve en la web con los permisos correctos.</p></div></li>
+      <li><b class="num">4</b><div class="cols"><div><h3>Planos y simulación 3D</h3>Medir un condominio, ubicar equipos y recorridos, y construir el 3D sobre esos datos.</div><p class="done"><b>Listo cuando:</b> el metraje de cable calculado coincide con el medido en sitio dentro de un margen acordado.</p></div></li>
+      <li><b class="num">5</b><div class="cols"><div><h3>Inteligencia artificial</h3>Guía a garita, cotizaciones y diagnóstico, conectados a los datos reales.</div><p class="done"><b>Listo cuando:</b> responde bien casos reales de prueba, y el sistema sigue operando si la IA se cae.</p></div></li>
+      <li><b class="num">6</b><div class="cols"><div><h3>Servidor dedicado</h3>Se pasa todo a su propio equipo. Se adelanta si entra un cliente real antes.</div><p class="done"><b>Listo cuando:</b> el sistema completo corre allí y un apagón o reinicio no lo deja caído.</p></div></li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="t-abierto">
+    <h2 id="t-abierto">Lo que falta decidir</h2>
+    <div class="open" style="margin-top:12px">
+      <div><b>Equipo del servidor local</b><span>Para la tablet, hace falta marca y modelo. Se puede comparar con una mini PC en el piloto.</span></div>
+      <div><b>Categorías y horas de SLA</b><span>Las propone Claude y tú las corriges.</span></div>
+      <div><b>Quién valida un incendio</b><span>Define cómo se dispara esa alerta para garita y presidentes.</span></div>
+      <div><b>Puerto 3389 de este PC</b><span>El escritorio remoto escucha en todas las redes. Conviene revisarlo antes de usarlo como servidor.</span></div>
+      <div><b>Usuarios y roles</b><span>El servidor todavía usa una sola clave. Hace falta antes de abrir la web y la app.</span></div>
+      <div><b>Salida a internet</b><span>Para llegar al servidor desde fuera hacen falta un túnel y un dominio.</span></div>
+      <div><b>Modelo de IA</b><span>Hay que comprobar qué modelo local corre con fluidez en el equipo final.</span></div>
+    </div>
+  </section>
+
+  <p class="foot">Versión del 2 de noviembre de 2026</p>
+</div>
